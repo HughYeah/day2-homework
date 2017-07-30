@@ -2,8 +2,8 @@ import { Component, OnInit,OnDestroy } from '@angular/core';
 import { ActivatedRoute, ParamMap } from '@angular/router';
 import { Location } from '@angular/common';
 import { EmployService } from '../employ.service'
-
-
+import {Parse} from "../../../cloud/parse"
+import { Http } from '@angular/http'
 @Component({
   selector: 'app-employ-edit',
   templateUrl: './employ-edit.component.html',
@@ -21,46 +21,37 @@ export class EmployEditComponent implements OnInit,OnDestroy {
   
   constructor(private route: ActivatedRoute,
   private employServ:EmployService,
-  private location: Location) {
+  private location: Location,
+  private http:Http) {
   }
   back(){
     this.location.back();
   }
   save(){
-    this.employServ.users.push(this.employ)
+    //this.employServ.users.push(this.employ)
     this.location.back();
   }
   ngOnInit() {
-    this.getUserSubscribe = this.route.params.subscribe(params=>{
-      this.getEmploy(params['sid']).then(employ=>{
-      console.log(employ)
-      this.employId = employ.index;
-      this.employ = employ
-    }).catch(err=>{
-      console.log(err)
-    })
+        this.route.params.subscribe(params=>{
+          let id = params['id']
+          if(id=="new"){
+            let employ = {name:""}
+            this.isNew = true;
+            this.employ = employ
+          }else{
+            let query = new Parse.Query("Employ",this.http)
+            query.equalTo("index",id);
+            query.find().subscribe(data=>{
+           console.log(data)
+          this.employ = data
+        })
+      }
+
     })
   }
   ngOnDestroy(){
     this.getUserSubscribe.unsubscribe();
   }
 
-  getEmploy(id: any): Promise<any> {
-    
-    let p = new Promise((resolve,reject)=>{
-      if(id=="new"){
-        let employ = {name:""}
-        this.isNew = true;
-        resolve(employ)
-      }
-      let employ = this.employServ.users.find(item=>item.index == id)
-      if(employ){
-        resolve(employ)
-      }else{
-        reject("employ not found")
-      }
-    })
-    return p
-}
 
 }

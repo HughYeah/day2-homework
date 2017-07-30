@@ -7,6 +7,10 @@ import {
   Title
 } from '@angular/platform-browser';
 
+import { Http } from '@angular/http'
+
+import {Parse} from "../../../cloud/parse"
+
 import {EmployService} from "../employ.service";
 @Component({
   selector: 'app-employ-list',
@@ -68,9 +72,12 @@ export class EmployListComponent implements OnInit {
   this.users.sort((a,b)=>{
       return b[type] * Math.random() - a[type] * Math.random() ;    });
   }
-  constructor(meta: Meta, title: Title, private userServ:EmployService) {
-    this.users = this.userServ.getUsers()
- 
+  constructor(meta: Meta, title: Title,private http:Http, private userServ:EmployService) {
+    let query = new Parse.Query("Employ",http)
+    query.find().subscribe(data=>{
+      console.log(data)
+      this.users = data
+    });
     // Set SEO
     title.setTitle('My Home Page');
 
